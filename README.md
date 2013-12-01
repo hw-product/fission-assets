@@ -25,13 +25,13 @@ Configure via fission JSON
 
 ```json
 {
-  :fission => {
-    :assets => {
-      :provider => 'AWS', # or 'local'
-      :connection => {
+  "fission": {
+    "assets": {
+      "provider": "AWS", # or 'local'
+      "connection": {
         ... fog compat args ...
       },
-      :bucket => 'BUCKET_NAME'
+      "bucket": "BUCKET_NAME"
     }
   }
 }
