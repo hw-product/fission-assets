@@ -48,7 +48,7 @@ module Fission
       protected
 
       def local_get(key)
-        file = Tempfile.new
+        file = Tempfile.new(key)
         File.open(File.join(bucket, key), 'r') do |f|
           while(data = f.read(2048))
             file.write data
