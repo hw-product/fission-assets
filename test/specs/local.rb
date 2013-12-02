@@ -21,4 +21,13 @@ describe 'Fission::Assets::Store' do
     result.is_a?(Tempfile)
     result.read.must_equal @content
   end
+
+  it 'deletes objects' do
+    @store.put(@key, @file).must_equal true
+    result = @store.get(@key)
+    result.is_a?(Tempfile)
+    result.read.must_equal @content
+    @store.delete(@key)
+    proc{ @store.get(@key) }.must_raise Fission::Assets::Error::NotFound
+  end
 end
