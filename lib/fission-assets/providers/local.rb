@@ -6,6 +6,7 @@ module Fission
       module Local
 
         def setup(args={})
+          @bucket ||= '/tmp/fission-assets'
           require 'fileutils'
           FileUtils.mkdir_p(bucket)
         end
