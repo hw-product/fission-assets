@@ -26,6 +26,7 @@ module Fission
         def get(key)
           object = @connection.get_object(bucket, key)
           file = Tempfile.new(key)
+          file.binmode
           file.write object.body
           file.flush
           file.rewind

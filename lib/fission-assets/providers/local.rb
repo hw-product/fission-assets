@@ -23,6 +23,7 @@ module Fission
           path = File.join(bucket, key)
           if(File.exists?(path))
             file = Tempfile.new(key)
+            file.binmode
             File.open(File.join(bucket, key), 'r') do |f|
               while(data = f.read(2048))
                 file.write data
@@ -39,7 +40,7 @@ module Fission
           unless(file.respond_to?(:read))
             file = File.open(file.to_s, 'r')
           end
-          File.open(File.join(bucket, key), 'w') do |f|
+          File.open(File.join(bucket, key), 'wb') do |f|
             while(data = file.read(2048))
               f.write data
             end
