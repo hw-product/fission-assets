@@ -1,7 +1,6 @@
 require 'fileutils'
 require 'tempfile'
-require 'zlib'
-require 'archive/tar/minitar'
+require 'archive/zip'
 
 module Fission
   module Assets
@@ -10,17 +9,22 @@ module Fission
 
         # directory:: directory path
         # Pack the given directory in a tarball and return `File`
-        def pack(directory)
-          file = Tempfile.new(File.basename(directory))
-          file.binmode
+        def pack(directory, name=nil)
+          tmp_file = Tempfile.new(name || File.basename(directory))
+          file_path = "#{tmp_file.path}.zip"
+          tmp_file.delete
           Dir.chdir(directory) do
-            Archive::Tar::Minitar.pack('.', file)
+            raise "Failed to pack object" unless system("zip -q -r #{file_path} .")
           end
-          if(file.closed?)
-            file = File.open(file.path, 'r')
-          else
-            file.rewind
+=begin
+          file = File.open(file_path, 'wb')
+          Dir.chdir(directory) do
+            Archive::Zip.archive(file, './', :symlinks => true)
           end
+          file.flush
+          file.fsync
+=end
+          file = File.open(file_path, 'rb')
           file
         end
 
@@ -34,8 +38,13 @@ module Fission
             unless(File.directory?(destination))
               FileUtils.mkdir_p(destination)
             end
-            Dir.chdir(destination) do
-              Archive::Tar::Minitar.unpack(object.path, '.')
+            if(true) #RUBY_PLATFORM == 'java')
+              # zlib bug in java causing buffer issues :(
+              Dir.chdir(destination) do
+                raise 'Failed to unpack object' unless system("unzip -q #{object.path} -d #{destination}")
+              end
+            else
+              Archive::Zip.extract(object, File.join(destination, '.'), :symlinks => true)
             end
             destination
           end
