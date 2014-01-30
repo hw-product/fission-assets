@@ -1,6 +1,6 @@
 require 'fileutils'
 require 'tempfile'
-require 'archive/zip'
+require 'zip'
 
 module Fission
   module Assets
@@ -13,17 +13,25 @@ module Fission
           tmp_file = Tempfile.new(name || File.basename(directory))
           file_path = "#{tmp_file.path}.zip"
           tmp_file.delete
-          Dir.chdir(directory) do
-            raise "Failed to pack object" unless system("zip -q -r #{file_path} .")
+          entries = Hash[
+            Dir.glob(File.join(directory, '**', '*')).map do |path|
+              [path.sub(%r{#{Regexp.escape(directory)}/?}, ''), path]
+            end
+          ]
+          Zip::File.open(file_path, Zip::File::CREATE) do |zipfile|
+            entries.keys.sort.each do |entry|
+              path = entries[entry]
+              if(File.directory?(path))
+                zipfile.mkdir(entry.dup)
+              elsif(File.symlink?(path))
+                zipfile.add(entry, path)
+              else
+                zipfile.get_output_stream(entry) do |content|
+                  content << File.read(path)
+                end
+              end
+            end
           end
-=begin
-          file = File.open(file_path, 'wb')
-          Dir.chdir(directory) do
-            Archive::Zip.archive(file, './', :symlinks => true)
-          end
-          file.flush
-          file.fsync
-=end
           file = File.open(file_path, 'rb')
           file
         end
@@ -38,13 +46,9 @@ module Fission
             unless(File.directory?(destination))
               FileUtils.mkdir_p(destination)
             end
-            if(true) #RUBY_PLATFORM == 'java')
-              # zlib bug in java causing buffer issues :(
-              Dir.chdir(destination) do
-                raise 'Failed to unpack object' unless system("unzip -q #{object.path} -d #{destination}")
-              end
-            else
-              Archive::Zip.extract(object, File.join(destination, '.'), :symlinks => true)
+            Zip::File.new(object.respond_to?(:path) ? object.path : object).each do |entry|
+              new_dest = File.join(destination, entry.name)
+              entry.extract(new_dest)
             end
             destination
           end
