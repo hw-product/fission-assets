@@ -28,7 +28,11 @@ module Fission
                 zipfile.add(entry, path)
               else
                 zipfile.get_output_stream(entry) do |content|
-                  content << File.read(path)
+                  File.open(path, 'rb') do |src_file|
+                    while(data = src_file.read(2048))
+                      content << data
+                    end
+                  end
                 end
               end
             end
