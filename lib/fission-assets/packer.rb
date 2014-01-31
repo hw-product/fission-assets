@@ -14,7 +14,8 @@ module Fission
           file_path = "#{tmp_file.path}.zip"
           tmp_file.delete
           entries = Hash[
-            Dir.glob(File.join(directory, '**', '*')).map do |path|
+            Dir.glob(File.join(directory, '**', '{*,.*}')).map do |path|
+              next if path.end_with?('.')
               [path.sub(%r{#{Regexp.escape(directory)}/?}, ''), path]
             end
           ]
