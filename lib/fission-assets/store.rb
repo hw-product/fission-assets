@@ -13,16 +13,24 @@ module Fission
         @provider = args.fetch(:provider, :local).to_sym
         @arguments = args
         require "fission-assets/providers/#{provider}"
-        provider_module = Fission::Assets::Providers.const_get(provider.to_s.split('_').map(&:capitalize).join)
-        extend provider_module
+        extend Fission::Assets::Providers.const_get(provider.to_s.split('_').map(&:capitalize).join)
         setup(args)
-        if(provider == :local)
-          require 'fileutils'
-          FileUtils.mkdir_p(bucket)
-        else
-          require 'fog'
-          @connection = Fog::Storage.new(fog_args)
-        end
+      end
+
+      def get(key)
+        raise NotImplementedError.new "`#get` has not been implemented for #{provider} provider"
+      end
+
+      def put(key, file)
+        raise NotImplementedError.new "`#put` has not been implemented for #{provider} provider"
+      end
+
+      def delete(key)
+        raise NotImplementedError.new "`#delete` has not been implemented for #{provider} provider"
+      end
+
+      def url(key, expires=nil)
+        raise NotImplementedError.new "`#url` has not been implemented for #{provider} provider"
       end
 
     end
