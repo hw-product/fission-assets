@@ -10,7 +10,7 @@ module Fission
 
       def initialize(args={})
         @bucket = args.delete(:bucket) || Carnivore::Config.get(:fission, :assets, :bucket)
-        @provider = args.fetch(:provider, :local).to_sym
+        @provider = args.fetch(:provider, Carnivore::Config.get(:fission, :assets, :connection, :provider) || :local).to_sym
         @arguments = args
         require "fission-assets/providers/#{provider}"
         extend Fission::Assets::Providers.const_get(provider.to_s.split('_').map(&:capitalize).join)
