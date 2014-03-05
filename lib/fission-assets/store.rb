@@ -6,13 +6,14 @@ module Fission
   module Assets
     class Store
 
-      attr_reader :provider, :arguments, :bucket
+      attr_accessor :bucket
+      attr_reader :provider, :arguments, :connection
 
       def initialize(args={})
         @bucket = args.delete(:bucket) || Carnivore::Config.get(:fission, :assets, :bucket)
         @provider = args.fetch(:provider, Carnivore::Config.get(:fission, :assets, :connection, :provider) || :local).to_sym
         @arguments = args
-        require "fission-assets/providers/#{provider}"
+        require "fission-assets/providers/#{provider.downcase}"
         extend Fission::Assets::Providers.const_get(provider.to_s.split('_').map(&:capitalize).join)
         setup(args)
       end
