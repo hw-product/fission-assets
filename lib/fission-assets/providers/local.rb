@@ -1,3 +1,4 @@
+require 'fileutils'
 require 'fission-assets/errors'
 
 module Fission
@@ -22,7 +23,7 @@ module Fission
         def get(key)
           path = File.join(bucket, key)
           if(File.exists?(path))
-            file = Tempfile.new(key)
+            file = Tempfile.new(key.tr('/', '-'))
             file.binmode
             File.open(File.join(bucket, key), 'rb') do |f|
               while(data = f.read(2048))
@@ -42,7 +43,9 @@ module Fission
           unless(file.respond_to?(:read))
             file = File.open(file.to_s, 'rb')
           end
-          File.open(File.join(bucket, key), 'wb') do |f|
+          storage_path = File.join(bucket, key)
+          FileUtils.mkdir_p(File.dirname(storage_path))
+          File.open(storage_path, 'wb') do |f|
             while(data = file.read(2048))
               f.write data
             end
