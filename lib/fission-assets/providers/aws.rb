@@ -23,21 +23,33 @@ module Fission
         end
 
         def delete(key)
-          connection.delete_object(bucket, key)
+          begin
+            connection.delete_object(bucket, key)
+          rescue Excon::Errors::NotFound
+            raise Fission::Assets::Error::NotFound.new(key)
+          end
         end
 
         def get(key)
-          file = Tempfile.new(key)
-          file.binmode
-          connection.get_object(bucket, key) do |chunk|
-            file.write chunk
+          file = Tempfile.new(key.gsub('/', '-'))
+          begin
+            file.binmode
+            connection.get_object(bucket, key) do |chunk|
+              yield chunk if block_given?
+              file.write chunk
+            end
+            file.flush
+            file.rewind
+            file
+          rescue Excon::Errors::NotFound
+            raise Fission::Assets::Error::NotFound.new(key)
           end
-          file.flush
-          file.rewind
-          file
         end
 
         def put(key, file)
+          unless(file.respond_to?(:read))
+            file = File.open(file.to_s, 'rb')
+          end
           if((parts = file.size / (MEG * MULTIPART_MEG_CHUNK)) > 0)
             parts += 1
             init = connection.initiate_multipart_upload(bucket, key)
@@ -51,6 +63,7 @@ module Fission
           else
             connection.put_object(bucket, key, file)
           end
+          file.close
           true
         end
 
@@ -61,10 +74,32 @@ module Fission
         protected
 
         def init_bucket
-          begin
-            connection.get_bucket(bucket)
-          rescue Excon::Errors::NotFound
-            connection.put_bucket(bucket)
+          unless(bucket == :none)
+            begin
+              connection.get_bucket(bucket)
+            rescue Excon::Errors::NotFound
+              begin
+                connection.put_bucket(bucket)
+              rescue Excon::Errors::BadRequest => e
+                if(connection.region && e.response.body.include?("IllegalLocationConstraintException"))
+                  args = arguments.dup
+                  args.delete(:region)
+                  @connection = Fog::Storage.new(args)
+                  retry
+                else
+                  raise
+                end
+              end
+            rescue Excon::Errors::MovedPermanently
+              if(connection.region)
+                args = arguments.dup
+                args.delete(:region)
+                @connection = Fog::Storage.new(args)
+                retry
+              else
+                raise
+              end
+            end
           end
         end
 

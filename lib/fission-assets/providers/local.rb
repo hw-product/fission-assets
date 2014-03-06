@@ -27,6 +27,7 @@ module Fission
             file.binmode
             File.open(File.join(bucket, key), 'rb') do |f|
               while(data = f.read(2048))
+                yield data if block_given?
                 file.write data
               end
             end
