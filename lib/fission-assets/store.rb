@@ -2,6 +2,8 @@ require 'tempfile'
 require 'fission-assets/errors'
 require 'carnivore/config'
 
+require 'fission-assets'
+
 module Fission
   module Assets
     class Store
@@ -13,8 +15,7 @@ module Fission
         @bucket = args.delete(:bucket) || Carnivore::Config.get(:fission, :assets, :bucket)
         @provider = args.fetch(:provider, Carnivore::Config.get(:fission, :assets, :connection, :provider) || :local).to_sym
         @arguments = args
-        require "fission-assets/providers/#{provider.downcase}"
-        extend Fission::Assets::Providers.const_get(provider.to_s.split('_').map(&:capitalize).join)
+        extend Fission::Assets::Provider.const_get(provider.to_s.split('_').map(&:capitalize).join)
         setup(args)
       end
 

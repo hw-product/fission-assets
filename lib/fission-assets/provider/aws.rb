@@ -1,6 +1,6 @@
 module Fission
   module Assets
-    module Providers
+    module Provider
       module Aws
 
         MEG = 1024 * 1024

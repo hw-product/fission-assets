@@ -1,3 +1,5 @@
+require 'fission-assets'
+
 module Fission
   module Assets
     class Error < StandardError

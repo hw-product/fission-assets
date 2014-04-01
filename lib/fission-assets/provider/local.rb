@@ -3,7 +3,7 @@ require 'fission-assets/errors'
 
 module Fission
   module Assets
-    module Providers
+    module Provider
       module Local
 
         def setup(args={})

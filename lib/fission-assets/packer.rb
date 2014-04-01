@@ -2,6 +2,8 @@ require 'fileutils'
 require 'tempfile'
 require 'zip'
 
+require 'fission-assets'
+
 module Fission
   module Assets
     class Packer
