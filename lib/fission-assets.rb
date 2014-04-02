@@ -5,6 +5,6 @@ module Fission
     autoload :Packer, 'fission-assets/packer'
     autoload :Provider, 'fission-assets/provider'
     autoload :Store, 'fission-assets/store'
-    autoload :Error, 'fission-assets/error'
+    autoload :Error, 'fission-assets/errors'
   end
 end
