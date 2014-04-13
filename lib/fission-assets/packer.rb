@@ -55,6 +55,9 @@ module Fission
             end
             Zip::File.new(object.respond_to?(:path) ? object.path : object).each do |entry|
               new_dest = File.join(destination, entry.name)
+              if(File.exists?(new_dest))
+                FileUtils.rm_rf(new_dest)
+              end
               entry.extract(new_dest)
             end
             destination
