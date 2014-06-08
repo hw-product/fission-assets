@@ -1,16 +1,27 @@
 module Fission
   module Assets
     module Provider
+      # Provider module for AWS S3 end point
       module Aws
 
+        # Size of megabyte
         MEG = 1024 * 1024
+        # Number of megabytes per chunk
         MULTIPART_MEG_CHUNK = 10
 
+        # Set bucket
+        #
+        # @param bucket_name [String]
+        # @return [String] bucket name
         def bucket=(bucket_name)
           @bucket = bucket_name
           init_bucket if bucket_name
+          bucket_name
         end
 
+        # Setup provider
+        #
+        # @param args [Hash]
         def setup(args={})
           fog_args = Smash.new(:provider => 'AWS')
           fog_args.merge!(Carnivore::Config.get(:fission, :assets, :connection) || {})
@@ -22,6 +33,9 @@ module Fission
           init_bucket if bucket
         end
 
+        # Delete object
+        #
+        # @param key [String]
         def delete(key)
           begin
             connection.delete_object(bucket, key)
@@ -30,6 +44,10 @@ module Fission
           end
         end
 
+        # Fetch object
+        #
+        # @param key [String]
+        # @return [File]
         def get(key)
           file = Tempfile.new(key.gsub('/', '-'))
           begin
@@ -46,6 +64,10 @@ module Fission
           end
         end
 
+        # Store object
+        #
+        # @param key [String]
+        # @param file [File]
         def put(key, file)
           unless(file.respond_to?(:read))
             file = File.open(file.to_s, 'rb')
@@ -67,12 +89,18 @@ module Fission
           true
         end
 
+        # URL for object
+        #
+        # @param key [String]
+        # @param expires_in [Numeric] number of seconds url is valid
+        # @return [String]
         def url(key, expire_in=30)
           connection.get_object_url(bucket, key, Time.now.to_i + expire_in.to_i)
         end
 
         protected
 
+        # Initialize bucket
         def init_bucket
           unless(bucket == :none)
             begin

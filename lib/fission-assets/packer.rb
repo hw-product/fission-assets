@@ -6,11 +6,15 @@ require 'fission-assets'
 
 module Fission
   module Assets
+    # Asset pack and unpacker
     class Packer
       class << self
 
-        # directory:: directory path
-        # Pack the given directory in a tarball and return `File`
+        # Pack directory into compressed file
+        #
+        # @param directory [String]
+        # @param name [String] tmp file base name
+        # @return [File]
         def pack(directory, name=nil)
           tmp_file = Tempfile.new(name || File.basename(directory))
           file_path = "#{tmp_file.path}.zip"
@@ -43,9 +47,12 @@ module Fission
           file
         end
 
-        # object:: `File` object
-        # destination:: Destination path
-        # Unpack the given object into the given destination
+        # Unpack object
+        #
+        # @param object [File]
+        # @param destination [String]
+        # @param args [Symbol] argument list (:disable_overwrite)
+        # @return [String] destination
         def unpack(object, destination, *args)
           if(File.exists?(destination) && args.include?(:disable_overwrite))
             destination
