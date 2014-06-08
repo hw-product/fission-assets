@@ -12,7 +12,7 @@ module Fission
         end
 
         def setup(args={})
-          fog_args = {:provider => 'AWS'}
+          fog_args = Smash.new(:provider => 'AWS')
           fog_args.merge!(Carnivore::Config.get(:fission, :assets, :connection) || {})
           fog_args.merge!(args)
           @provider = fog_args[:provider].to_s.downcase.to_sym
@@ -93,8 +93,12 @@ module Fission
             rescue Excon::Errors::MovedPermanently
               if(connection.region)
                 args = arguments.dup
-                args.delete(:region)
-                @connection = Fog::Storage.new(args)
+                if(args.include?(:region))
+                  args.delete(:region)
+                  @connection = Fog::Storage.new(args)
+                else
+                  raise
+                end
                 retry
               else
                 raise
