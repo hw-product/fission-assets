@@ -30,16 +30,8 @@ module Fission
               path = entries[entry]
               if(File.directory?(path))
                 zipfile.mkdir(entry.dup)
-              elsif(File.symlink?(path))
-                zipfile.add(entry, path)
               else
-                zipfile.get_output_stream(entry) do |content|
-                  File.open(path, 'rb') do |src_file|
-                    while(data = src_file.read(2048))
-                      content << data
-                    end
-                  end
-                end
+                zipfile.add(entry, path)
               end
             end
           end
@@ -69,7 +61,6 @@ module Fission
               end
               entry.restore_permissions = true
               entry.extract(new_dest)
-              File.chmod(0755, new_dest) # @todo DON'T DO THIS
             end
             destination
           end
