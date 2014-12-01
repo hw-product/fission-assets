@@ -60,12 +60,16 @@ module Fission
             unless(File.directory?(destination))
               FileUtils.mkdir_p(destination)
             end
-            Zip::File.new(object.respond_to?(:path) ? object.path : object).each do |entry|
+            zfile = Zip::File.new(object.respond_to?(:path) ? object.path : object)
+            zfile.restore_permissions = true
+            zfile.each do |entry|
               new_dest = File.join(destination, entry.name)
               if(File.exists?(new_dest))
                 FileUtils.rm_rf(new_dest)
               end
+              entry.restore_permissions = true
               entry.extract(new_dest)
+              File.chmod(0755, new_dest) # @todo DON'T DO THIS
             end
             destination
           end
