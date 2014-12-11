@@ -12,5 +12,5 @@ Gem::Specification.new do |s|
   s.add_dependency 'fission'
   s.add_dependency 'fog'
   s.add_dependency 'rubyzip'
-  s.files = Dir['**/*']
+  s.files = Dir['{lib}/**/**/*'] + %w(fission-assets.gemspec README.md CHANGELOG.md)
 end
