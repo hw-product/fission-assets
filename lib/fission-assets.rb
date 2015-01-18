@@ -1,4 +1,4 @@
-require 'fission-assets/version'
+require 'jackal-assets'
 
 module Fission
   # Asset storage helper
@@ -9,3 +9,5 @@ module Fission
     autoload :Error, 'fission-assets/errors'
   end
 end
+
+require 'fission-assets/version'
