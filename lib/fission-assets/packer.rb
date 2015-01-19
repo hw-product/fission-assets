@@ -52,7 +52,14 @@ module Fission
             unless(File.directory?(destination))
               FileUtils.mkdir_p(destination)
             end
-            zfile = Zip::File.new(object.respond_to?(:path) ? object.path : object)
+            if(object.respond_to?(:path))
+              to_unpack = object.path
+            elsif(object.respond_to?(:io))
+              to_unpack = object.io
+            else
+              to_unpack = object
+            end
+            zfile = Zip::File.new(to_unpack)
             zfile.restore_permissions = true
             zfile.each do |entry|
               new_dest = File.join(destination, entry.name)
